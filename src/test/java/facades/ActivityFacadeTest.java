@@ -29,7 +29,7 @@ public class ActivityFacadeTest {
 
     @BeforeAll
     public static void setUpClass() {
-        emf = EMF_Creator.createEntityManagerFactory();
+        emf = EMF_Creator.createEntityManagerFactoryForTest();
         facade = ActivityFacade.getActivityFacade(emf);
     }
 
