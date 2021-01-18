@@ -52,7 +52,7 @@ public class Activity implements Serializable {
     @JoinColumn(name = "cityInfo_id", referencedColumnName = "id")
     private CityInfo cityInfo;
 
-    public Activity(LocalDateTime exerciseDate, String type, int duration, int distance, String comment, String userName) {
+    public Activity(String type, int duration, int distance, String comment, String userName) {
         this.exerciseDate = LocalDateTime.now();
         this.type = type;
         this.duration = duration;

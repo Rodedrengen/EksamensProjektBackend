@@ -6,6 +6,8 @@
 package facades;
 
 import entities.Activity;
+import entities.Role;
+import entities.User;
 import errorhandling.NotCityByThatNameException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -21,24 +23,23 @@ import utils.EMF_Creator;
  *
  * @author simon
  */
-public class ActivityFacadeTest {
+public class UserFacadeTest {
 
     private static EntityManagerFactory emf;
-    private static ActivityFacade facade;
+    private static UserFacade facade;
 
-    public ActivityFacadeTest() {
+    public UserFacadeTest() {
     }
 
     @BeforeAll
     public static void setUpClass() {
         emf = EMF_Creator.createEntityManagerFactoryForTest();
-        facade = ActivityFacade.getActivityFacade(emf);
+        facade = UserFacade.getUserFacade(emf);
 
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
-        em.createQuery("DELETE FROM Activity").executeUpdate();
-        em.createQuery("DELETE FROM WeatherInfo").executeUpdate();
-        em.createQuery("DELETE FROM CityInfo").executeUpdate();
+
+        em.createQuery("DELETE FROM User").executeUpdate();
 
         em.getTransaction().commit();
     }
@@ -49,12 +50,16 @@ public class ActivityFacadeTest {
 
     @BeforeEach
     public void setUp() {
-
-        Activity act = new Activity("Løb", 0, 0, "", "admin");
-
         EntityManager em = emf.createEntityManager();
+
+        User user = new User("Simon", "1234", 24, 85);
+        Role userRole = new Role("user");
+        Role adminRole = new Role("admin");
+        
         em.getTransaction().begin();
-        em.persist(act);
+        em.persist(userRole);
+        em.persist(user);
+        em.persist(adminRole);
         em.getTransaction().commit();
     }
 
@@ -63,9 +68,9 @@ public class ActivityFacadeTest {
 
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
-        em.createQuery("DELETE FROM Activity").executeUpdate();
-        em.createQuery("DELETE FROM WeatherInfo").executeUpdate();
-        em.createQuery("DELETE FROM CityInfo").executeUpdate();
+
+        em.createQuery("DELETE FROM User").executeUpdate();
+        em.createQuery("DELETE FROM Role").executeUpdate();
 
         em.getTransaction().commit();
     }
@@ -74,33 +79,26 @@ public class ActivityFacadeTest {
      * Test of saveActivity method, of class ActivityFacade.
      */
     @Test
-    public void testAmoutnOfActivities() throws NotCityByThatNameException, Exception {
+    public void testGetUserCount() throws NotCityByThatNameException, Exception {
 
         int expected = 1;
 
-        int actual = (int) facade.getAmountOfActivities();
+        int actual = (int) facade.getUserCount();
 
         assertEquals(expected, actual);
-        assertNotEquals(expected, 2);
-        // TODO review the generated test code and remove the default call to fail.
 
     }
 
     @Test
-    public void testSaveActivity() throws NotCityByThatNameException, Exception {
+    public void testRegisterUser() throws NotCityByThatNameException, Exception {
 
-        Activity act = new Activity("Løb", 0, 0, "", "admin");
+        User user = new User("JohnDoe", "JohnDear", 99, 1000);
 
-        int id = facade.saveActivity(act.getType(), act.getDuration(), act.getDistance(), act.getComment(), "Virum", "admin");
+        facade.createUser(user);
+        int expected = 2;
+        int actual = (int) facade.getUserCount();
 
-        int exspected = 2;
+        assertEquals(expected,actual);
 
-        int actual = (int) facade.getAmountOfActivities();
-
-        assertEquals(exspected, actual);
-
-        Activity actualActivity = facade.getActivityById(id);
-
-        assertEquals(act.getType(), actualActivity.getType());
     }
 }
