@@ -1,8 +1,12 @@
 package rest;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dto.*;
 import entities.User;
+import facades.FacadeExample;
+import facades.UserFacade;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -14,11 +18,14 @@ import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -35,6 +42,8 @@ public class DemoResource {
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
     @Context
     private UriInfo context;
+
+    private static final UserFacade FACADE = UserFacade.getUserFacade(EMF);
 
     @Context
     SecurityContext securityContext;
@@ -59,6 +68,23 @@ public class DemoResource {
         } finally {
             em.close();
         }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("register")
+    public String registerUser(String jsonString) {
+        JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
+        String username = json.get("username").getAsString();
+        String password = json.get("password").getAsString();
+        int age = json.get("userAge").getAsInt();
+        int weight = json.get("userWeight").getAsInt();
+        User user = new User(username, password,age,weight);
+
+        FACADE.createUser(user);
+        
+        return "{\"msg\": \"Succes: \"}";
     }
 
     @GET
@@ -101,14 +127,14 @@ public class DemoResource {
         FullDTO dto = new FullDTO();
         for (Future<GenericDTO> future : futures) {
             if (future.get() instanceof ChuckDTO) {
-                dto.setChuckDTO((ChuckDTO) future.get()); 
+                dto.setChuckDTO((ChuckDTO) future.get());
             } else if (future.get() instanceof DadDTO) {
-                dto.setDadDTO((DadDTO) future.get()); 
+                dto.setDadDTO((DadDTO) future.get());
             } else if (future.get() instanceof XkcdDTO) {
-                dto.setXkcdDTO((XkcdDTO) future.get()); 
+                dto.setXkcdDTO((XkcdDTO) future.get());
             } else if (future.get() instanceof DogDTO) {
-                dto.setDogDTO((DogDTO) future.get()); 
-            }else if (future.get() instanceof IpDTO) {
+                dto.setDogDTO((DogDTO) future.get());
+            } else if (future.get() instanceof IpDTO) {
                 dto.setIpDTO((IpDTO) future.get());
             }
         }

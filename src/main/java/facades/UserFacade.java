@@ -1,5 +1,6 @@
 package facades;
 
+import entities.Role;
 import entities.User;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -9,10 +10,10 @@ import security.errorhandling.AuthenticationException;
  * @author lam@cphbusiness.dk
  */
 public class UserFacade {
-
+    
     private static EntityManagerFactory emf;
     private static UserFacade instance;
-
+    
     private UserFacade() {
     }
 
@@ -28,7 +29,18 @@ public class UserFacade {
         }
         return instance;
     }
-
+    
+    public void createUser(User user) {
+        EntityManager em = emf.createEntityManager();
+        
+        Role userRole = em.find(Role.class, "user");
+        user.addRole(userRole);
+        
+        em.getTransaction().begin();
+        em.persist(user);
+        em.getTransaction().commit();
+    }
+    
     public User getVeryfiedUser(String username, String password) throws AuthenticationException {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -42,5 +54,5 @@ public class UserFacade {
         }
         return user;
     }
-
+    
 }

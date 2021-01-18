@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -25,17 +27,22 @@ public class User implements Serializable {
     @NotNull
     @Column(name = "user_name", length = 25)
     private String userName;
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
     @Column(name = "user_pass")
     private String userPass;
+    
     @JoinTable(name = "user_roles", joinColumns = {
         @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
         @JoinColumn(name = "role_name", referencedColumnName = "role_name")})
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Role> roleList = new ArrayList<>();
 
+    private int age;
+    private int weight;
+    
     public List<String> getRolesAsStrings() {
         if (roleList.isEmpty()) {
             return null;
@@ -55,8 +62,11 @@ public class User implements Serializable {
         return (BCrypt.checkpw(pw, userPass));
     }
 
-    public User(String userName, String userPass) {
+    public User(String userName, String userPass, int age, int weight) {
         this.userName = userName;
+        this.age = age;
+        this.weight = weight;
+        
         String salt = BCrypt.gensalt();
         this.userPass = BCrypt.hashpw(userPass, salt);
     }
